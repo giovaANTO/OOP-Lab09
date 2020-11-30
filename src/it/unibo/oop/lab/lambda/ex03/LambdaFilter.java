@@ -35,10 +35,12 @@ import javax.swing.JTextArea;
  */
 public final class LambdaFilter extends JFrame {
 
-    private static final long serialVersionUID = 1760990730218643730L;
+	
+	private static final long serialVersionUID = 1760990730218643730L;
 
     private enum Command {
         IDENTITY("No modifications", Function.identity()),
+        TO_LOWERCASE("Convert to lowercase", String::toLowerCase),
         CHAR_COUNT("Count the number of characters", s -> String.valueOf(s.length())),
         LINE_NUMBERS("Count the number of lines", s -> String.valueOf(s.lines().count())),
         SORT_WORDS("Sort in alphabetically order", s -> Arrays.stream(s.split(" "))
@@ -46,7 +48,13 @@ public final class LambdaFilter extends JFrame {
                                                               .collect(Collectors.reducing((s1, s2) -> s1.concat(" " + s2)))
                                                               .get()),
 
-        WORD_COUNT("Write the word count", s -> Arrays.stream(s.split(" ")).map(str -> str + " -> " + str.length()).collect(Collectors.joining("\n")));
+        WORD_COUNT("Write the word count", str -> Arrays.stream(str.split(" "))
+				 .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+				 .entrySet()
+				 .stream()
+				 .map(me -> me.getKey() + " -> " + me.getValue())
+				 .reduce("", (el1, el2) -> el1 + "\n" + el2));
+
 
         private final String commandName;
         private final Function<String, String> fun;
